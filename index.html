@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Wally — Neon Bot Head</title>
+<title>Wally — Press to Speak</title>
 <style>
 :root{
   --bg:#07090f;
@@ -14,150 +14,205 @@
 html,body{height:100%;margin:0}
 body{
   background:var(--bg);
-  display:grid;place-items:center;
+  display:grid; place-items:center;
+  font-family:ui-monospace, Menlo, Consolas, "Courier New", monospace;
+  color:#cfefff; gap:14px;
 }
-#bot{
-  width:var(--size);
-  height:auto;
-  filter:drop-shadow(0 0 22px rgba(34,181,255,.45));
-  opacity:0;
-  transform:scale(0.8);
-  animation:startup 1.4s ease-out forwards;
-}
-@keyframes startup{
-  0%{opacity:0; transform:scale(0.8);}
-  70%{opacity:1; transform:scale(1.05);}
-  100%{opacity:1; transform:scale(1);}
-}
-.face-scanlines{fill:url(#scanlines);opacity:.8;animation:scan 7s linear infinite,flicker 4s steps(80) infinite;}
+#bot{width:var(--size); height:auto; filter: drop-shadow(0 0 22px rgba(34,181,255,.45));}
+.face-scanlines{fill:url(#scanlines);opacity:.8;animation:scan 7s linear infinite, flicker 4s steps(80) infinite;}
 @keyframes scan{from{transform:translateY(-6px)}to{transform:translateY(0)}}
 @keyframes flicker{0%,100%{opacity:.85}50%{opacity:.72}}
 #eyes{transform-origin:50% 50%;animation:blink 6s infinite;}
 @keyframes blink{0%,88%,100%{transform:scaleY(1)}90%{transform:scaleY(.08)}}
 .glow{filter:url(#glow)}
 [data-state] .m{opacity:0}
-[data-state="neutral"]    #m-neutral{opacity:1}
-[data-state="happy"]      #m-happy{opacity:1}
-[data-state="sad"]        #m-sad{opacity:1}
+[data-state="neutral"]   #m-neutral{opacity:1}
+[data-state="happy"]     #m-happy{opacity:1}
+[data-state="sad"]       #m-sad{opacity:1}
 [data-state="surprised"] #m-o{opacity:1}
-[data-state="angry"]      #m-angry{opacity:1}
+[data-state="angry"]     #m-angry{opacity:1}
 [data-state="thinking"]  #m-flat{opacity:1}
 .eye,.brow{transition:transform .18s ease}
-[data-state="angry"]    .brow-left{transform:rotate(12deg) translate(-6,-6)}
-[data-state="angry"]    .brow-right{transform:rotate(-12deg) translate(6,-6)}
-[data-state="happy"]    .brow-left,[data-state="happy"] .brow-right{transform:translate(0,4)}
-[data-state="sad"]      .brow-left{transform:rotate(-10deg) translate(-4,4)}
-[data-state="sad"]      .brow-right{transform:rotate(10deg) translate(4,4)}
+[data-state="angry"]   .brow-left{transform:rotate(12deg) translate(-6,-6)}
+[data-state="angry"]   .brow-right{transform:rotate(-12deg) translate(6,-6)}
+[data-state="happy"]   .brow-left,[data-state="happy"] .brow-right{transform:translate(0,4)}
+[data-state="sad"]     .brow-left{transform:rotate(-10deg) translate(-4,4)}
+[data-state="sad"]     .brow-right{transform:rotate(10deg) translate(4,4)}
+#status{font-size:14px;opacity:.9;text-align:center}
+#wave-group{display:none}
+.wave-frame{
+  fill:none; stroke:var(--neon); stroke-width:6; stroke-linecap:round;
+  filter:drop-shadow(0 0 10px rgba(34,181,255,.8));
+  opacity:0; transition:opacity .06s;
+}
+#ptt{
+  appearance:none; border:none; border-radius:12px;
+  padding:12px 16px; font:inherit; color:#00263a; cursor:pointer;
+  background:linear-gradient(180deg, #8bd9ff, #22b5ff);
+  box-shadow:0 6px 20px rgba(34,181,255,.35), inset 0 0 0 2px rgba(255,255,255,.2);
+}
+#ptt.listening{
+  background:linear-gradient(180deg, #ffd26b, #ffb22e);
+  box-shadow:0 6px 22px rgba(255,178,46,.4), inset 0 0 0 2px rgba(255,255,255,.25);
+}
+#ptt:disabled{opacity:.6; cursor:not-allowed}
+.wrapper{display:grid; place-items:center; gap:10px}
 </style>
 </head>
 <body>
 
-<svg id="bot" viewBox="0 0 480 560" data-state="neutral" aria-label="Neon robot head">
-  <defs>
-    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="4" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-    <radialGradient id="dome" cx="50%" cy="42%" r="65%">
-      <stop offset="0%" stop-color="#12263d"/><stop offset="100%" stop-color="#050b15"/>
-    </radialGradient>
-    <linearGradient id="rim" x1="0" x2="0" y1="0" y2="1">
-      <stop offset="0%" stop-color="#12243a"/><stop offset="100%" stop-color="#08101c"/>
-    </linearGradient>
-    <pattern id="scanlines" width="4" height="6" patternUnits="userSpaceOnUse">
-      <rect width="4" height="2" fill="rgba(170,220,255,.08)"/>
-    </pattern>
-  </defs>
+<div class="wrapper">
+  <svg id="bot" viewBox="0 0 480 560" data-state="neutral" aria-label="Wally the neon robot head">
+    <defs>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="4" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <radialGradient id="dome" cx="50%" cy="42%" r="65%">
+        <stop offset="0%" stop-color="#12263d"/><stop offset="100%" stop-color="#050b15"/>
+      </radialGradient>
+      <linearGradient id="rim" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0%" stop-color="#12243a"/><stop offset="100%" stop-color="#08101c"/>
+      </linearGradient>
+      <pattern id="scanlines" width="4" height="6" patternUnits="userSpaceOnUse">
+        <rect width="4" height="2" fill="rgba(170,220,255,.08)"/>
+      </pattern>
+    </defs>
+    <g id="top"><rect x="228" y="52" width="24" height="42" rx="6" fill="url(#rim)"/><circle cx="240" cy="40" r="10" fill="#22b5ff" class="glow"/></g>
+    <g id="head"><path d="M80,260 C80,140 160,60 240,60 C320,60 400,140 400,260 L400,360 C400,440 320,500 240,500 C160,500 80,440 80,360 Z" fill="url(#dome)"/><path d="M92,260 C92,150 166,76 240,76 C314,76 388,150 388,260 L388,354 C388,430 320,486 240,486 C160,486 92,430 92,354 Z" fill="none" stroke="url(#rim)" stroke-width="18"/></g>
+    <g id="ears" opacity=".9"><rect x="52" y="250" width="30" height="90" rx="8" fill="url(#rim)"/><rect x="398" y="250" width="30" height="90" rx="8" fill="url(#rim)"/></g>
+    <g id="face-window"><circle cx="240" cy="320" r="140" fill="#0a1728"/><circle cx="240" cy="320" r="140" fill="none" stroke="#133558" stroke-width="8"/><circle cx="240" cy="320" r="140" class="face-scanlines"/></g>
+    <g id="eyes"><rect class="brow brow-left glow" x="160" y="248" width="70" height="8" rx="4" fill="#22b5ff"/><rect class="brow brow-right glow" x="250" y="248" width="70" height="8" rx="4" fill="#22b5ff"/><g class="glow"><ellipse class="eye" cx="195" cy="285" rx="30" ry="22" fill="#fff"/><ellipse class="eye" cx="285" cy="285" rx="30" ry="22" fill="#fff"/><ellipse cx="195" cy="285" rx="22" ry="16" fill="rgba(34,181,255,.65)"/><ellipse cx="285" cy="285" rx="22" ry="16" fill="rgba(34,181,255,.65)"/></g></g>
+    <g id="mouths" class="glow"><path id="m-neutral" class="m" d="M180 360 Q240 380 300 360" stroke="#22b5ff" stroke-width="12" stroke-linecap="round" fill="none"/><path id="m-happy" class="m" d="M170 355 Q240 410 310 355" stroke="#22b5ff" stroke-width="14" stroke-linecap="round" fill="none"/><path id="m-sad" class="m" d="M170 385 Q240 340 310 385" stroke="#22b5ff" stroke-width="12" stroke-linecap="round" fill="none"/><ellipse id="m-o" class="m" cx="240" cy="365" rx="22" ry="30" fill="#fff"/><line id="m-flat" class="m" x1="185" y1="365" x2="295" y2="365" stroke="#22b5ff" stroke-width="12" stroke-linecap="round"/><path id="m-angry" class="m" d="M175 350 L305 350" stroke="#22b5ff" stroke-width="14" stroke-linecap="round"/></g>
+    <g id="wave-group" transform="translate(100,365)"><path class="wave-frame" d="M0 0 L40 -8 L80 6 L120 -12 L160 10 L200 -6 L240 8 L280 0"/><path class="wave-frame" d="M0 0 L40 10 L80 -6 L120 14 L160 -8 L200 4 L240 -12 L280 0"/><path class="wave-frame" d="M0 0 L40 -5 L80 -15 L120 -3 L160 12 L200 8 L240 -2 L280 0"/><path class="wave-frame" d="M0 0 L40 14 L80 6 L120 -10 L160 -6 L200 12 L240 4 L280 0"/><path class="wave-frame" d="M0 0 L40 -16 L80 8 L120 12 L160 -4 L200 -10 L240 6 L280 0"/><path class="wave-frame" d="M0 0 L40 8 L80 -12 L120 6 L160 16 L200 -4 L240 -6 L280 0"/></g>
+    <circle cx="240" cy="320" r="148" fill="none" stroke="rgba(34,181,255,.25)" stroke-width="2" class="glow"/>
+  </svg>
 
-  <g id="top"><rect x="228" y="52" width="24" height="42" rx="6" fill="url(#rim)"/>
-    <circle cx="240" cy="40" r="10" fill="#22b5ff" class="glow"/></g>
-
-  <g id="head">
-    <path d="M80,260 C80,140 160,60 240,60 C320,60 400,140 400,260 L400,360
-               C400,440 320,500 240,500 C160,500 80,440 80,360 Z"
-             fill="url(#dome)"/>
-    <path d="M92,260 C92,150 166,76 240,76 C314,76 388,150 388,260 L388,354
-               C388,430 320,486 240,486 C160,486 92,430 92,354 Z"
-             fill="none" stroke="url(#rim)" stroke-width="18"/>
-  </g>
-
-  <g id="ears" opacity=".9">
-    <rect x="52" y="250" width="30" height="90" rx="8" fill="url(#rim)"/>
-    <rect x="398" y="250" width="30" height="90" rx="8" fill="url(#rim)"/>
-  </g>
-
-  <g id="face-window">
-    <circle cx="240" cy="320" r="140" fill="#0a1728"/>
-    <circle cx="240" cy="320" r="140" fill="none" stroke="#133558" stroke-width="8"/>
-    <circle cx="240" cy="320" r="140" class="face-scanlines"/>
-  </g>
-
-  <g id="eyes">
-    <rect class="brow brow-left glow"  x="160" y="248" width="70" height="8" rx="4" fill="#22b5ff"/>
-    <rect class="brow brow-right glow" x="250" y="248" width="70" height="8" rx="4" fill="#22b5ff"/>
-    <g class="glow">
-      <ellipse class="eye" cx="195" cy="285" rx="30" ry="22" fill="#fff"/>
-      <ellipse class="eye" cx="285" cy="285" rx="30" ry="22" fill="#fff"/>
-      <ellipse cx="195" cy="285" rx="22" ry="16" fill="rgba(34,181,255,.65)"/>
-      <ellipse cx="285" cy="285" rx="22" ry="16" fill="rgba(34,181,255,.65)"/>
-    </g>
-  </g>
-
-  <g id="mouths" class="glow">
-    <path id="m-neutral" class="m" d="M180 360 Q240 380 300 360" stroke="#22b5ff" stroke-width="12" stroke-linecap="round" fill="none"/>
-    <path id="m-happy"    class="m" d="M170 355 Q240 410 310 355" stroke="#22b5ff" stroke-width="14" stroke-linecap="round" fill="none"/>
-    <path id="m-sad"      class="m" d="M170 385 Q240 340 310 385" stroke="#22b5ff" stroke-width="12" stroke-linecap="round" fill="none"/>
-    <ellipse id="m-o"    class="m" cx="240" cy="365" rx="22" ry="30" fill="#fff"/>
-    <line id="m-flat"     class="m" x1="185" y1="365" x2="295" y2="365" stroke="#22b5ff" stroke-width="12" stroke-linecap="round"/>
-    <path id="m-angry"    class="m" d="M175 350 L305 350" stroke="#22b5ff" stroke-width="14" stroke-linecap="round"/>
-  </g>
-
-  <circle cx="240" cy="320" r="148" fill="none" stroke="rgba(34,181,255,.25)" stroke-width="2" class="glow"/>
-</svg>
+  <button id="ptt" aria-pressed="false" title="Press to speak">Press to speak</button>
+  <div id="status">Click the button to talk.</div>
+</div>
 
 <script>
-const bot=document.getElementById('bot');
-function setMood(m){bot.setAttribute('data-state',m);}
+// All UI, speech, and wave logic is here...
+const bot = document.getElementById('bot');
+const statusEl = document.getElementById('status');
+const pttBtn = document.getElementById('ptt');
+const waveGroup = document.getElementById('wave-group');
+const frames = [...waveGroup.querySelectorAll('.wave-frame')];
+let waveTimer = null, frameIdx = 0, selectedVoice = null, rec = null, isListening = false;
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-function speakText(txt){
-  const u=new SpeechSynthesisUtterance(txt);
-  const voice=speechSynthesis.getVoices().find(v=>/male|david|daniel|alex/i.test(v.name))||null;
-  u.voice=voice; u.pitch=1; u.rate=1;
-  u.onstart=()=>setMood('speaking');
-  u.onend=()=>setMood('neutral');
+function setMood(m){
+  bot.setAttribute('data-state', m);
+  statusEl.textContent = ({
+    neutral: "Click the button to talk.", thinking: "Thinking…",
+    speaking: "Speaking…", happy: "All set.", sad: "Ooh, my bad—network hiccup."
+  })[m] || "";
+}
+
+function renderWaveFrame(){
+  frames.forEach((p,i)=>p.style.opacity = (i===frameIdx?1:0));
+  frameIdx = (frameIdx + 1) % frames.length;
+}
+
+function waveShow(show){
+  if(show){
+    waveGroup.style.display = 'block';
+    if(!waveTimer){ renderWaveFrame(); waveTimer = setInterval(renderWaveFrame, 75); }
+  }else{
+    clearInterval(waveTimer); waveTimer = null; frameIdx = 0;
+    frames.forEach(p=>p.style.opacity=0);
+    waveGroup.style.display = 'none';
+  }
+}
+
+function pickVoice(){
+  const vs = speechSynthesis.getVoices();
+  selectedVoice = vs.find(v=>v.lang?.startsWith('en')) || vs[0] || null;
+}
+pickVoice();
+if(typeof speechSynthesis !== 'undefined') speechSynthesis.onvoiceschanged = ()=>pickVoice();
+
+function speakText(text){
+  const u = new SpeechSynthesisUtterance(text);
+  u.voice = selectedVoice; u.pitch = 0.9; u.rate = 1.04;
+  u.onstart = ()=>{
+    stopListening(); setMood('speaking'); pttBtn.disabled = true; waveShow(true);
+  };
+  u.onend = ()=>{
+    setMood('neutral'); waveShow(false); pttBtn.disabled = false;
+  };
+  u.onerror = ()=>{
+    setMood('sad'); waveShow(false); pttBtn.disabled = false;
+  };
   speechSynthesis.speak(u);
 }
 
-function cleanText(t){return t.replace(/[*_#`~>]/g,'').trim();}
-
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let rec; if(SR){rec=new SR(); rec.lang='en-US'; rec.interimResults=false;
-  rec.onresult=(e)=>{const t=e.results[0][0].transcript.trim(); if(t) handleUserText(t);}
-  rec.onend=()=>{}
+function initRecognition(){
+  if(!SR) return;
+  rec = new SR();
+  rec.lang = 'en-US'; rec.interimResults = false; rec.continuous = false; rec.maxAlternatives = 1;
+  rec.onresult = (e)=>{
+    const text = e.results[0][0].transcript.trim();
+    stopListening();
+    if(text) handleUserText(text);
+  };
+  rec.onerror = (e)=>{ stopListening(); setMood('sad'); };
+  rec.onend = ()=>{
+    isListening = false;
+    pttBtn.classList.remove('listening'); pttBtn.setAttribute('aria-pressed','false');
+    if(bot.getAttribute('data-state') === 'thinking') setMood('neutral');
+  };
 }
 
+function startListening(){
+  if(!rec) initRecognition();
+  if(!SR){ statusEl.textContent = "Speech recognition not supported on this device."; return; }
+  if(isListening) return;
+  if(speechSynthesis.speaking) speechSynthesis.cancel();
+  try{
+    rec.start(); isListening = true; setMood('neutral'); pttBtn.classList.add('listening');
+    pttBtn.setAttribute('aria-pressed','true'); statusEl.textContent = "Listening… tap again to stop.";
+  } catch(err){ /* Ignored */ }
+}
+
+function stopListening(){
+  if(!rec || !isListening) return;
+  try{ rec.stop(); } catch(_){}
+  isListening = false;
+  pttBtn.classList.remove('listening'); pttBtn.setAttribute('aria-pressed','false');
+}
+
+pttBtn.addEventListener('click', ()=>{
+  if(isListening) stopListening();
+  else startListening();
+});
+
+let chatHistory = [];
 async function handleUserText(text){
   setMood('thinking');
-  try{
-    const res=await fetch('/.netlify/functions/chat',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({messages:[{role:'user',content:text}]})
-    });
-    const ai=await res.text();
-    setMood('happy'); speakText(cleanText(ai));
-  }catch(e){setMood('sad'); speakText("Ooh, my bad—something broke.");}
-}
+  chatHistory.push({ role:'user', content:text });
 
-// Start/stop with click or space
-let listening=false;
-function toggle(){
-  if(!rec)return;
-  if(listening){rec.stop(); listening=false; setMood('neutral');}
-  else{rec.start(); listening=true; setMood('neutral');}
+  // THIS PART IS NOW SECURE
+  try{
+    const res = await fetch('/.netlify/functions/chat', { // Calls your secure function
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ messages: chatHistory })
+    });
+
+    if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
+    const aiText = await res.text(); // The function returns plain text
+    chatHistory.push({ role:'assistant', content: aiText });
+    setMood('happy');
+    speakText(aiText);
+  } catch (e){
+    console.error(e);
+    setMood('sad');
+    speakText("Ooh, my bad—something hiccuped on my end.");
+  }
 }
-document.body.addEventListener('click',toggle);
-document.body.addEventListener('keydown',e=>{if(e.code==='Space')toggle();});
 </script>
 </body>
 </html>
